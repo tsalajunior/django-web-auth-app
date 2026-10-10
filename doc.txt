@@ -1,0 +1,15 @@
+1. Le fichier Dockerfile
+Ce fichier indique à Docker comment installer Python et les dépendances nécessaires dans le conteneur.
+
+2. Le fichier requirements.txt
+Pour l'instant, mettons les bases. On pourra y ajouter les extensions plus tard (comme django-phonenumber-field et Pillow).
+
+3. Le fichier docker-compose.yml
+Ce fichier va lier ton application web et ta base de données PostgreSQL ensemble.
+
+4. Le fichier .env
+Ce fichier sécurise tes identifiants de base de données.
+
+
+Configurer la base docker + PostgreSQL
+
