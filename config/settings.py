@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-s)amsvv3a$l4)6j!zd&r)+@_0g_4*i#fq20ew52_m4j#e*qvfd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost', 'https://django-web-auth-app.onrender.com/').split(',')
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
