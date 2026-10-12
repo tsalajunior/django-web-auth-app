@@ -146,3 +146,12 @@ DEFAULT_FROM_EMAIL = 'Système d\'authentification django <justech.agency@gmail.
 
 # Configuration WhiteNoise pour les fichiers statiques
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Configuration CSRF pour la production sur Render (HTTPS)
+CSRF_TRUSTED_ORIGINS = [
+    'https://django-web-auth-app.onrender.com',
+]
+
+# Si ton site tourne entièrement en HTTPS en production (ce qui est le cas sur Render) :
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
