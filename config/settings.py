@@ -117,6 +117,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+# Définition obligatoire du dossier de destination pour collectstatic en production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Configuration des fichiers médias (photos de profil)
 MEDIA_URL = '/media/'
