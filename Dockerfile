@@ -24,7 +24,8 @@ COPY . .
 # Exposer le port sur lequel l'application va tourner
 EXPOSE 8000
 
-# Commande par défaut pour lancer les migrations, préparer les fichiers statiques et démarrer Gunicorn
+# Commande par défaut pour lancer les migrations, créer un superuser par défaut, préparer les fichiers statiques et démarrer Gunicorn
 CMD python manage.py migrate && \
+    python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='stephane').exists() or User.objects.create_superuser('stephane', 'justech.agency@gmail.com', 'stephane')" && \
     python manage.py collectstatic --noinput && \
     gunicorn config.wsgi:application --bind 0.0.0.0:8000
