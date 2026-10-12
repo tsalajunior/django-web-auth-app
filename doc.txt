@@ -13,4 +13,5 @@ Ce fichier sécurise tes identifiants de base de données.
 
 Configurer la base docker + PostgreSQL
 
-superuser: stephane - stephane
+superuser: eren - Boska@2026
+stephane - stephane

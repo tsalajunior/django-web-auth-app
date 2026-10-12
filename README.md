@@ -1,140 +1,129 @@
-# Secure Web Authentication Application
+# Application d'Authentification Web Sécurisée (Django)
 
-A robust, production-ready Django web authentication application built with modern security standards, containerized with Docker, and backed by PostgreSQL. Designed with strict user session management, real-time email verification, international phone support, and profile customization.
-
----
-
-## Key Features & Specifications
-
-- **Custom User Model (`CustomUser`)**: Extends Django's AbstractUser to include:
-  - International phone number handling (`phonenumber_field`).
-  - Profile picture uploads (`ImageField` with local/cloud media storage).
-  - Email verification flags (`is_verified`).
-- **Secure Authentication Workflow**:
-  - Custom user registration with automated email token verification.
-  - Strict blocking mechanism: Unverified users cannot log in.
-  - Password change management (`PasswordChangeForm`) preserving active sessions (`update_session_auth_hash`).
-- **Advanced Security Best Practices**:
-  - `@login_required` decorators on protected routes.
-  - `@never_cache` decorators on sensitive endpoints to prevent browser history/back-button session leaks after logout.
-- **Dockerized Environment**: Fully containerized using Docker Compose with isolated web and database services.
+Une application web d'authentification Django robuste et prête pour la production, construite selon les normes de sécurité modernes, conteneurisée avec Docker et alimentée par PostgreSQL. Elle intègre une gestion stricte des sessions utilisateur, une vérification des e-mails en temps réel via l'API Resend, un support des numéros de téléphone internationaux et la personnalisation des profils.
 
 ---
 
-## Tech Stack
+## Fonctionnalités Clés & Spécifications
 
-- **Backend**: Python 3.11, Django 4.2.30
-- **Database**: PostgreSQL
-- **Containerization**: Docker & Docker Compose
-- **Frontend**: Bootstrap 5, HTML5, CSS3
-- **Production Utilities**: Gunicorn, WhiteNoise, dj-database-url
+- **Modèle Utilisateur Personnalisé (`CustomUser`)** : Étend le modèle `AbstractUser` de Django pour inclure :
+  - La gestion des numéros de téléphone internationaux (`phonenumber_field`).
+  - Le téléchargement de photos de profil (`ImageField`).
+  - Des indicateurs de vérification des e-mails (`is_verified`).
+- **Flux d'Authentification Sécurisé** :
+  - Inscription personnalisée avec vérification par jeton unique envoyé par e-mail via l'API Resend.
+  - Mécanisme de blocage strict : Les utilisateurs non vérifiés ne peuvent pas se connecter.
+  - Gestion du changement de mot de passe (`PasswordChangeForm`) préservant les sessions actives (`update_session_auth_hash`).
+- **Bonnes Pratiques de Sécurité Avancées** :
+  - Décorateurs `@login_required` sur les routes protégées.
+  - Décorateurs `@never_cache` sur les pages sensibles pour empêcher les fuites de session via le bouton "Précédent" du navigateur après une déconnexion.
+  - Protection CSRF renforcée pour la production (`CSRF_TRUSTED_ORIGINS`, cookies sécurisés).
+- **Environnement Conteneurisé (Docker)** : Entièrement conteneurisé avec Docker Compose pour isoler les services web et de base de données.
 
 ---
 
-## Project Architecture
+## Stack Technique
+
+- **Backend** : Python 3.11, Django 4.2.30
+- **Base de données** : PostgreSQL
+- **Conteneurisation** : Docker & Docker Compose
+- **Frontend** : Bootstrap 5, HTML5, CSS3
+- **Utilitaires de Production** : Gunicorn, WhiteNoise, API Resend (e-mails transactionnels)
+
+---
+
+## Architecture du Projet
 
 ```text
 web-auth-app/
 │
-├── config/                  # Django project configuration
+├── config/                  # Configuration du projet Django
 │   ├── __init__.py
-│   ├── settings.py          # Global settings (DB, email, media, security)
-│   ├── urls.py              # Main URL routing & media serving
-│   ├── wsgi.py              # WSGI entry point for production
+│   ├── settings.py          # Paramètres globaux (BDD, sécurité, médias)
+│   ├── urls.py              # Routage principal & gestion des médias
+│   ├── wsgi.py              # Point d'entrée WSGI pour la production
 │   └── asgi.py
 │
-├── accounts/                # Authentication & user management app
-│   ├── migrations/          # Database migrations
-│   ├── templates/accounts/  # HTML templates (login, register, profile, main)
-│   ├── admin.py             # Custom admin dashboard configuration
+├── accounts/                # Application d'authentification et gestion des utilisateurs
+│   ├── migrations/          # Migrations de la base de données
+│   ├── templates/accounts/  # Templates HTML (connexion, inscription, profil, accueil)
+│   ├── admin.py             # Configuration du tableau de bord administrateur
 │   ├── apps.py
-│   ├── forms.py             # Custom creation, update, and password forms
-│   ├── models.py            # CustomUser model definition
-│   └── views.py             # Authentication & profile views
+│   ├── forms.py             # Formulaires de création, de mise à jour et de mot de passe
+│   ├── models.py            # Définition du modèle CustomUser
+│   └── views.py             # Vues d'authentification, de profil et intégration Resend
 │
-├── media/                   # Uploaded user profile pictures
-├── static/                  # Global stylesheets & assets
-├── Dockerfile               # Production & dev container configuration
-├── docker-compose.yml       # Multi-container orchestration
-├── requirements.txt         # Python dependencies
-├── Procfile                 # Cloud deployment process file
+├── media/                   # Photos de profil des utilisateurs
+├── static/                  # Feuilles de style et actifs globaux
+├── Dockerfile               # Configuration du conteneur (production & dev)
+├── docker-compose.yml       # Orchestration multi-conteneurs
+├── requirements.txt         # Dépendances Python
+├── Procfile                 # Fichier de processus pour le cloud
 └── README.md
 ```
 
 ---
 
-## ⚙️ Environment Setup & Local Installation
+## ⚙️ Configuration de l'Environnement & Installation Locale
 
-### Prerequisites
+### Prérequis
 
-- Install [Docker Desktop](https://www.docker.com/) and ensure it is running.
-- Git (optional, for cloning).
+- Installer [Docker Desktop](https://www.docker.com/) et s'assurer qu'il est en cours d'exécution.
+- Git (pour le clonage).
 
-### 1. Clone & Navigate to the Project
+### 1. Naviguer dans le Projet
 
 ```bash
 cd web-auth-app
 ```
 
-### 2. Run with Docker Compose
+### 2. Lancer avec Docker Compose
 
-Build and start the services in detached mode:
+Construire et démarrer les services en arrière-plan :
 
 ```bash
 docker compose up --build -d
 ```
 
-### 3. Create a Superuser
+### 3. Créer un Superutilisateur
 
-To access the Django Administration Dashboard (`http://127.0.0.1:8000/admin/`):
+Pour accéder au tableau de bord d'administration Django (`http://127.0.0.1:8000/admin/`) :
 
 ```bash
 docker exec -it django_web python manage.py createsuperuser
 ```
 
-Follow the interactive prompts to set your username, email, and password.
+Suivez les instructions interactives pour définir le nom d'utilisateur, l'e-mail et le mot de passe.
 
 ---
 
-## Email Configuration & Testing
+## Configuration des E-mails & API Transactionnelle (Resend)
 
-The application supports dual email backends:
+L'application utilise une solution d'e-mailing moderne par API pour s'affranchir des limitations SMTP synchrones et éviter les expirations de délais (erreurs 502) sur les hébergements cloud :
 
-1. **Development Mode**: Configured to dump verification emails directly into your Docker terminal logs (`console.EmailBackend`).
-2. **Production Mode (SMTP/Gmail)**: Uses Google SMTP servers with an App Password.
+- **Mode Développement** : Peut utiliser le backend console pour le débogage local.
+- **Mode Production** : S'intègre avec **Resend** via son API HTTP (`paquet python resend`) pour une livraison instantanée et fiable des e-mails de validation.
 
-To configure production Gmail SMTP, add these lines to `config/settings.py`:
-
-```python
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'your-email@gmail.com'
-EMAIL_HOST_PASSWORD = 'your-google-app-password'
-DEFAULT_FROM_EMAIL = 'Your App Name <your-email@gmail.com>'
-```
+Assurez-vous que la variable d'environnement `RESEND_API_KEY` est correctement définie.
 
 ---
 
-## Deployment Guide (Render)
+## Guide de Déploiement (Render)
 
-This project is fully optimized for cloud deployment via Docker.
+Ce projet est entièrement optimisé pour un déploiement cloud via Docker sur des plateformes telles que Render.
 
-### 1. Required Environment Variables
+### 1. Variables d'Environnement Requises
 
-Set these environment variables on your cloud hosting dashboard:
+Configurez ces variables dans le tableau de bord de votre hébergeur cloud :
 
-- `SECRET_KEY`: A secure, random cryptographic string.
-- `DEBUG`: Set to `False`.
-- `ALLOWED_HOSTS`: Your domain name or cloud provider URL (e.g., `your-app.onrender.com`).
-- `DATABASE_URL`: Provided automatically by managed PostgreSQL services (e.g., Render PostgreSQL).
+- `SECRET_KEY` : Une chaîne cryptographique secrète et aléatoire.
+- `DEBUG` : Défini à `False`.
+- `ALLOWED_HOSTS` : Votre nom de domaine ou URL de service cloud (ex: `votre-app.onrender.com`).
+- `DATABASE_URL` : Fournie automatiquement par les services PostgreSQL managés (ex: Render PostgreSQL).
+- `RESEND_API_KEY` : Votre clé API Resend pour l'envoi d'e-mails.
 
-### 2. Static Files & Production Assets
+### 2. Fichiers Statiques & Actifs de Production
 
-- **WhiteNoise** is integrated into the middleware stack (`config/settings.py`) to serve compressed static files efficiently without requiring an external storage bucket.
-- The `Dockerfile` automatically executes `python manage.py collectstatic --noinput` and runs database migrations on container startup.
-- **Gunicorn** serves the application via the configured `Procfile`.
-
-```
-```
+- **WhiteNoise** est intégré dans la pile middleware (`config/settings.py`) pour servir les fichiers statiques compressés efficacement sans nécessiter de bucket de stockage externe.
+- Le `Dockerfile` exécute automatiquement les migrations de base de données, initialise un superutilisateur par défaut si absent, lance `python manage.py collectstatic --noinput` et démarre Gunicorn.
+- **Gunicorn** sert l'application via le `Procfile` configuré avec des seuils de délai (timeout) adaptés pour éviter les arrêts brutaux (`SIGKILL`) sur les instances partagées ou gratuites.
