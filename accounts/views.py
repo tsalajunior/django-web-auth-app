@@ -20,6 +20,10 @@ from .forms import CustomUserCreationForm, UserUpdateForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 
+import resend
+
+import os
+
 User = get_user_model()
 
 
@@ -27,15 +31,13 @@ def register_view(request):
     """
     Gère l'inscription de l'utilisateur.
     À la validation du formulaire, le compte est créé (is_verified=False)
-    et un email de confirmation est simulé dans la console.
+    et un email de confirmation est envoyé via Resend.
     """
     if request.method == "POST":
-        form = CustomUserCreationForm(
-            request.POST, request.FILES
-        )  # request.FILES est indispensable pour la photo !
+        form = CustomUserCreationForm(request.POST, request.FILES)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_active = True  # On peut le laisser actif ou False selon si on veut bloquer avant confirmation
+            user.is_active = True
             user.is_verified = False  # Pas encore vérifié par email
             user.save()
 
@@ -43,31 +45,29 @@ def register_view(request):
             token = default_token_generator.make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
 
-            # Construction du lien de confirmation (à adapter selon ton domaine local)
-            # Exemple : http://127.0.0.1:8000/verify/UID/TOKEN/
-            confirmation_link = f"http://127.0.0.1:8000/accounts/verify/{uid}/{token}/"
+            # Détection dynamique du protocole et du domaine (Localhost vs Render)
+            protocol = "https" if request.is_secure() else "http"
+            domain = request.get_host()
 
-            # Envoi de l'e-mail (qui apparaîtra dans ton terminal grâce au console.EmailBackend)
-            send_mail(
-                subject="Confirmez votre inscription",
-                message=f"Bonjour {user.username},\n\nVeuillez cliquer sur le lien suivant pour valider votre inscription :\n{confirmation_link}",
-                from_email=(
-                    settings.DEFAULT_FROM_EMAIL
-                    if hasattr(settings, "DEFAULT_FROM_EMAIL")
-                    else "webmaster@localhost"
-                ),
-                recipient_list=[user.email],
-            )
+            # Construction du lien de confirmation dynamique
+            confirmation_link = f"{protocol}://{domain}/accounts/verify/{uid}/{token}/"
+
+            # Appel de la fonction d'envoi via Resend
+            send_verification_email(user, confirmation_link)
 
             messages.success(
                 request,
                 "Inscription réussie ! Un e-mail de confirmation vous a été envoyé.",
             )
-            return redirect("accounts:login")  # Redirection vers la page de connexion
+            return redirect("accounts:login")
     else:
         form = CustomUserCreationForm()
 
     return render(request, "accounts/register.html", {"form": form})
+
+
+# Configuration de la clé API Resend (récupérée des variables d'environnement)
+resend.api_key = os.environ.get("RESEND_API_KEY")
 
 
 def verify_email_view(request, uidb64, token):
@@ -152,45 +152,6 @@ def logout_view(request):
 
 @login_required(login_url="accounts:login")
 @never_cache
-# def profile_view(request):
-#     """
-#     Permet à l'utilisateur connecté de voir/modifier ses infos personnelles
-#     ET de changer son mot de passe sur la même page.
-#     """
-#     if request.method == 'POST':
-#         # On regarde quel formulaire a été soumis (via un identifiant 'form_type')
-#         form_type = request.POST.get('form_type')
-
-#         if form_type == 'profile_form':
-#             form = UserUpdateForm(request.POST, request.FILES, instance=request.user)
-#             password_form = PasswordChangeForm(request.user) # Formulaire vide pour l'autre bloc
-#             if form.is_valid():
-#                 form.save()
-#                 messages.success(request, "Votre profil a été mis à jour avec succès !")
-#                 return redirect('accounts:profile')
-
-#         elif form_type == 'password_form':
-#             form = UserUpdateForm(instance=request.user) # Formulaire vide pour l'autre bloc
-#             password_form = PasswordChangeForm(request.user, request.POST)
-#             if password_form.is_valid():
-#                 user = password_form.save()
-#                 # Empêche l'utilisateur d'être déconnecté après le changement de mot de passe
-#                 update_session_auth_hash(request, user)
-#                 messages.success(request, "Votre mot de passe a été modifié avec succès !")
-#                 return redirect('accounts:profile')
-#         else:
-#             form = UserUpdateForm(instance=request.user)
-#             password_form = PasswordChangeForm(request.user)
-#     else:
-#         form = UserUpdateForm(instance=request.user)
-#         password_form = PasswordChangeForm(request.user)
-
-
-#     context = {
-#         'form': form,
-#         'password_form': password_form,
-#     }
-#     return render(request, 'accounts/profile.html', context)
 def profile_view(request):
     """
     Permet à l'utilisateur connecté de voir/modifier ses infos personnelles
@@ -224,3 +185,24 @@ def profile_view(request):
         "password_form": password_form,
     }
     return render(request, "accounts/profile.html", context)
+
+
+def send_verification_email(user, verification_link):
+    """
+    Envoie l'e-mail de validation via l'API HTTP de Resend.
+    """
+    params = {
+        "from": "onboarding@resend.dev",  # Adresse de test par défaut de Resend
+        "to": [user.email],
+        "subject": "Confirmez votre inscription",
+        "html": f"""
+            <p>Bonjour {user.username},</p>
+            <p>Veuillez cliquer sur le lien suivant pour valider votre inscription :</p>
+            <p><a href="{verification_link}">Activer mon compte</a></p>
+        """
+    }
+    try:
+        email = resend.Emails.send(params)
+        return email
+    except Exception as e:
+        print(f"Erreur d'envoi d'e-mail via Resend : {e}")
