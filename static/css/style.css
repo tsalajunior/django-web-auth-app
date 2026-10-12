@@ -1,0 +1,46 @@
+body {
+    min-height: 100vh;
+    background: #f4f7fb;
+    color: #26334a;
+}
+
+.dashboard-header {
+    min-height: 82px;
+    background: #fff;
+    border-bottom: 1px solid #e8edf4;
+}
+
+.app-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.profile-picture,
+.profile-placeholder {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+}
+
+.profile-picture {
+    object-fit: cover;
+}
+
+.profile-placeholder {
+    display: grid;
+    place-items: center;
+    background: #e8efff;
+    color: #3559a8;
+    font-weight: 700;
+}
+
+.dashboard-content {
+    max-width: 1100px;
+}
+
+.welcome-card {
+    border: 0;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #fff 45%, #eef3ff);
+}

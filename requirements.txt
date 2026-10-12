@@ -5,3 +5,5 @@ Pillow>=10.0.0
 phonenumbers>=8.13.0
 django-phonenumber-field>=7.2.0
 Babel>=2.12
+whitenoise==6.6.0
+gunicorn>=23.0.0
